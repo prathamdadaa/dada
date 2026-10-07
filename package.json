@@ -1,0 +1,7 @@
+{
+  "name": "dada-ai-assistant",
+  "version": "1.0.0",
+  "description": "Dada - voice-enabled personal AI assistant by Pratham Dada (IGNOU BCA)",
+  "private": true,
+  "engines": { "node": ">=18" }
+}

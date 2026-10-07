@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dada - Personal AI Assistant</title>
+<meta name="description" content="Dada, a voice-enabled AI assistant engineered by Pratham Dada, IGNOU BCA student.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="shell">
+  <aside class="core">
+    <h1 class="brand">Dada</h1>
+    <canvas id="orb" width="520" height="520" aria-label="Voice visualizer"></canvas>
+    <p id="status" class="status" role="status" aria-live="polite">Ready</p>
+    <div class="controls">
+      <button id="micBtn" class="btn primary" aria-pressed="false">Hold a conversation</button>
+      <label class="toggle"><input type="checkbox" id="wakeToggle"> <span>Hands-free: say "Hey Dada"</span></label>
+      <label class="toggle"><input type="checkbox" id="speakToggle" checked> <span>Speak replies</span></label>
+      <label class="toggle">Language
+        <select id="langSel"><option value="en-IN">English / Hinglish</option><option value="hi-IN">हिन्दी</option><option value="en-US">English (US)</option></select>
+      </label>
+    </div>
+    <p class="credit">Engineered by <strong>Pratham Dada</strong><br>BCA student, IGNOU</p>
+  </aside>
+
+  <section class="chat">
+    <div id="log" class="log" aria-live="polite">
+      <div class="msg bot"><div class="bubble">Hello, I'm Dada. Ask me anything, debug code, or tell me to build a page or portfolio and I'll preview it here.</div></div>
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip">Who made you?</button>
+      <button class="chip">Build me a dark portfolio page</button>
+      <button class="chip">Find the bug: for(i=0;i<=arr.length;i++)</button>
+    </div>
+    <form id="composer" class="composer" autocomplete="off">
+      <textarea id="input" rows="1" placeholder="Type, or tap the mic and speak" maxlength="4000" aria-label="Message"></textarea>
+      <button class="btn primary" type="submit" id="sendBtn">Send</button>
+    </form>
+  </section>
+
+  <section class="preview" id="preview" hidden>
+    <header><span>Live preview</span><div><button class="btn small" id="openTab">Open in tab</button><button class="btn small" id="closePrev">Close</button></div></header>
+    <iframe id="frame" sandbox="allow-scripts" title="Generated page preview"></iframe>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

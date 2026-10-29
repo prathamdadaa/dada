@@ -22,8 +22,9 @@ module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST.' });
 
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return res.status(500).json({ error: 'Server is missing ANTHROPIC_API_KEY. Add it in your hosting dashboard.' });
+  // Groq API Key check
+  const key = process.env.GROQ_API_KEY;
+  if (!key) return res.status(500).json({ error: 'Server is missing GROQ_API_KEY. Add it in your hosting dashboard.' });
 
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
   if (limited(ip)) return res.status(429).json({ error: 'Too many requests. Wait a minute and try again.' });
@@ -32,7 +33,6 @@ module.exports = async (req, res) => {
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = null; } }
   if (!body || !Array.isArray(body.messages)) return res.status(400).json({ error: 'Invalid request.' });
 
-  // Only user/assistant roles are accepted; the system prompt can't be injected from the client.
   let messages = body.messages
     .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
     .slice(-MAX_MESSAGES)
@@ -40,23 +40,28 @@ module.exports = async (req, res) => {
   while (messages.length && messages[0].role !== 'user') messages.shift();
   if (!messages.length || messages[messages.length - 1].role !== 'user') return res.status(400).json({ error: 'Send a message first.' });
 
+  // Prepend System Prompt as a system message for Groq format
+  const formattedMessages = [
+    { role: 'system', content: SYSTEM_PROMPT },
+    ...messages
+  ];
+
   try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      headers: { 'content-type': 'application/json', 'authorization': `Bearer ${key}` },
       body: JSON.stringify({
-        model: process.env.DADA_MODEL || 'claude-sonnet-5-5',
+        model: process.env.DADA_MODEL || 'llama-3.3-70b-versatile',
         max_tokens: 4096,
-        system: SYSTEM_PROMPT,
-        messages
+        messages: formattedMessages
       })
     });
     const data = await r.json();
     if (!r.ok) {
-      console.error('Upstream error', r.status, data?.error?.type);
+      console.error('Upstream error', r.status, data?.error?.message);
       return res.status(502).json({ error: 'The AI service returned an error. Check your API key and model name.' });
     }
-    const reply = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+    const reply = data.choices?.[0]?.message?.content || '';
     return res.status(200).json({ reply });
   } catch (e) {
     console.error(e);
